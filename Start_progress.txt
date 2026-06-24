@@ -1,0 +1,18 @@
+UX HERO · DESIGN ENGINEER · SELF-ASSESSMENT
+═══════════════════════════════════════════════════════
+Дата: 22.06.2026
+
+Шкала: 1 = нічого не знаю · 3 = базово · 5 = впевнено
+───────────────────────────────────────────────────────
+Figma · Variables, Auto Layout, Dev Mode             [ 4 / 5 ]
+HTML + CSS · Tailwind, Flexbox, Grid                 [ 2 / 5 ]
+JavaScript / React · читати, модифікувати            [ 1 / 5 ]
+Git + Terminal · commit, branch, PR                  [ 1 / 5 ]
+AI tools · Claude Code, MCP, custom skills           [ 3 / 5 ]
+Deploy · Vercel, domain, preview                     [ 1 / 5 ]
+───────────────────────────────────────────────────────
+Середнє: 2.0/5   ·   Заповнено: 6/6
+
+Повернись сюди через 3 і через 6 місяців — поглянь що змінилось.
+
+— uxhero.design
