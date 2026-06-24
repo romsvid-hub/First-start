@@ -23,6 +23,12 @@ Figma (advanced), Adobe Creative Suite. Claude, Figma AI, MCP integrations. Noti
 ### Languages
 English B2, Polish C1, Ukrainian native.
 
+### Currently learning
+- Git & GitHub workflows
+- React component structure
+- Tailwind CSS utility patterns
+- Storybook for design system documentation
+
 ### Links
 - Portfolio: https://alieneyes.figma.site
 - LinkedIn: https://linkedin.com/in/romsvid
