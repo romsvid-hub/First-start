@@ -32,3 +32,4 @@ English B2, Polish C1, Ukrainian native.
 ### Links
 - Portfolio: https://alieneyes.figma.site
 - LinkedIn: https://linkedin.com/in/romsvid
+- [More about me →](ABOUT.md)
