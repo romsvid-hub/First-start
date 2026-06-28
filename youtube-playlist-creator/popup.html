@@ -58,13 +58,14 @@
   .btn-undo { background: #00c853; color: #000; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
 
   /* PLAYER */
-  .player { border-top: 1px solid #222; padding: 10px 16px; flex-shrink: 0; display: none; }
-  .player.active { display: block; }
-  .player-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
-  .player-channel { font-size: 11px; color: #777; margin-bottom: 8px; }
-  .progress-bar { width: 100%; height: 3px; background: #333; border-radius: 2px; margin-bottom: 8px; cursor: pointer; }
-  .progress-fill { height: 100%; background: #00c853; border-radius: 2px; width: 0%; transition: width .5s linear; }
-  .player-controls { display: flex; align-items: center; justify-content: center; gap: 20px; }
+  .player { border-top: 1px solid #222; flex-shrink: 0; display: none; flex-direction: column; }
+  .player.active { display: flex; }
+  .player-iframe-wrap { width: 100%; aspect-ratio: 16/9; background: #000; flex-shrink: 0; }
+  .player-iframe-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
+  .player-meta { padding: 8px 16px 4px; }
+  .player-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .player-channel { font-size: 11px; color: #777; margin-top: 2px; }
+  .player-controls { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 6px 16px 10px; }
   .ctrl-btn { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 4px; }
   .ctrl-btn:hover { color: #00c853; }
 </style>
@@ -113,9 +114,13 @@
 
 <!-- PLAYER -->
 <div class="player" id="player">
-  <div class="player-title" id="playerTitle">—</div>
-  <div class="player-channel" id="playerChannel"></div>
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="player-iframe-wrap">
+    <iframe id="ytPlayer" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+  <div class="player-meta">
+    <div class="player-title" id="playerTitle">—</div>
+    <div class="player-channel" id="playerChannel"></div>
+  </div>
   <div class="player-controls">
     <button class="ctrl-btn" id="prevBtn">⏮</button>
     <button class="ctrl-btn" id="playBtn">⏸</button>

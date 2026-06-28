@@ -217,6 +217,8 @@ function onDragEnd() {
 }
 
 // --- PLAYER ---
+const ytPlayerFrame = document.getElementById('ytPlayer');
+
 function playTrack(idx) {
   currentIndex = idx;
   isPlaying = true;
@@ -227,27 +229,33 @@ function playTrack(idx) {
   video.isNew = false;
   chrome.storage.local.set({ playlist, currentVideoId: video.id });
   renderPlaylist();
-  updatePlayer();
-  openYouTube(video.id);
+  updatePlayer(video);
 }
 
-function updatePlayer() {
-  const items = playlist.filter(v => !v.deleted);
-  const video = items[currentIndex];
+function updatePlayer(video) {
+  if (!video) {
+    const items = playlist.filter(v => !v.deleted);
+    video = items[currentIndex];
+  }
   if (!video) return;
   playerEl.classList.add('active');
   playerTitle.textContent = video.title;
   playerChannel.textContent = video.channel;
-  playBtn.textContent = isPlaying ? '⏸' : '▶';
+  playBtn.textContent = '⏸';
+  ytPlayerFrame.src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
 }
 
 playBtn.addEventListener('click', () => {
   isPlaying = !isPlaying;
   playBtn.textContent = isPlaying ? '⏸' : '▶';
+  // toggle via postMessage to iframe
+  ytPlayerFrame.contentWindow?.postMessage(
+    JSON.stringify({ event: 'command', func: isPlaying ? 'playVideo' : 'pauseVideo' }),
+    '*'
+  );
 });
 
 document.getElementById('prevBtn').addEventListener('click', () => {
-  const items = playlist.filter(v => !v.deleted);
   if (currentIndex > 0) playTrack(currentIndex - 1);
 });
 
@@ -255,17 +263,6 @@ document.getElementById('nextBtn').addEventListener('click', () => {
   const items = playlist.filter(v => !v.deleted);
   if (currentIndex < items.length - 1) playTrack(currentIndex + 1);
 });
-
-function openYouTube(videoId) {
-  chrome.tabs.query({ url: '*://www.youtube.com/*' }, tabs => {
-    const url = `https://www.youtube.com/watch?v=${videoId}`;
-    if (tabs.length) {
-      chrome.tabs.update(tabs[0].id, { url, active: true });
-    } else {
-      chrome.tabs.create({ url });
-    }
-  });
-}
 
 // --- UTILS ---
 function formatDuration(iso) {

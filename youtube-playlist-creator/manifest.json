@@ -26,10 +26,13 @@
     }
   },
   "oauth2": {
-    "client_id": "YOUR_GOOGLE_CLIENT_ID",
+    "client_id": "125508684691-p3cgqgajolefsj21j8ar430dm4o6vead.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/youtube.readonly"
     ]
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; frame-src https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'"
   },
   "content_scripts": [
     {
