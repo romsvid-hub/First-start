@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 400px; height: 580px; background: #0f0f0f; color: #fff; font-family: Inter, sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ACCORDION */
+  .accordion { border-bottom: 1px solid #222; flex-shrink: 0; }
+  .accordion-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 600; user-select: none; }
+  .accordion-header span { color: #aaa; font-weight: 400; font-size: 12px; }
+  .accordion-arrow { transition: transform .2s; font-size: 10px; color: #aaa; }
+  .accordion.open .accordion-arrow { transform: rotate(180deg); }
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height .25s ease; }
+  .accordion.open .accordion-body { max-height: 240px; }
+  .channel-list { max-height: 160px; overflow-y: auto; padding: 8px 16px; }
+  .channel-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #1a1a1a; }
+  .channel-item img { width: 28px; height: 28px; border-radius: 50%; }
+  .channel-item span { font-size: 13px; flex: 1; }
+  .channel-item input { accent-color: #00c853; width: 15px; height: 15px; }
+  .accordion-footer { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px 12px; gap: 8px; }
+  .btn-save { background: #00c853; color: #000; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-save:hover { background: #00e676; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #1a1a1a; flex-shrink: 0; }
+  .toolbar select { background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 6px; padding: 5px 8px; font-size: 12px; cursor: pointer; flex: 1; }
+  .btn-fetch { background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .btn-fetch:hover { border-color: #00c853; color: #00c853; }
+  .refresh-time { font-size: 11px; color: #555; white-space: nowrap; }
+
+  /* PLAYLIST */
+  .playlist { flex: 1; overflow-y: auto; padding: 8px 0; position: relative; }
+  .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; color: #444; font-size: 14px; }
+
+  /* TRACK CARD */
+  .track { display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: default; border-bottom: 1px solid #111; transition: background .15s; }
+  .track:hover { background: #161616; }
+  .track.dragging { opacity: .4; }
+  .track.drag-over { border-top: 2px solid #00c853; }
+  .drag-handle { color: #444; cursor: grab; font-size: 16px; flex-shrink: 0; }
+  .drag-handle:active { cursor: grabbing; }
+  .thumb-wrap { position: relative; flex-shrink: 0; }
+  .thumb-wrap img { width: 80px; height: 45px; border-radius: 4px; object-fit: cover; display: block; }
+  .duration { position: absolute; bottom: 3px; right: 3px; background: rgba(0,0,0,.8); color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; }
+  .track-info { flex: 1; min-width: 0; }
+  .track-title { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .new-dot { width: 7px; height: 7px; border-radius: 50%; background: #00c853; flex-shrink: 0; }
+  .track-channel { font-size: 11px; color: #777; margin-top: 2px; }
+  .synced-badge { font-size: 10px; color: #00c853; margin-top: 2px; }
+  .btn-delete { background: none; border: none; color: #444; font-size: 16px; cursor: pointer; flex-shrink: 0; padding: 4px; }
+  .btn-delete:hover { color: #ff4444; }
+
+  /* UNDO */
+  .undo-toast { position: absolute; bottom: 12px; right: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .undo-toast.visible { opacity: 1; pointer-events: all; }
+  .btn-undo { background: #00c853; color: #000; border: none; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  /* PLAYER */
+  .player { border-top: 1px solid #222; padding: 10px 16px; flex-shrink: 0; display: none; }
+  .player.active { display: block; }
+  .player-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
+  .player-channel { font-size: 11px; color: #777; margin-bottom: 8px; }
+  .progress-bar { width: 100%; height: 3px; background: #333; border-radius: 2px; margin-bottom: 8px; cursor: pointer; }
+  .progress-fill { height: 100%; background: #00c853; border-radius: 2px; width: 0%; transition: width .5s linear; }
+  .player-controls { display: flex; align-items: center; justify-content: center; gap: 20px; }
+  .ctrl-btn { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; padding: 4px; }
+  .ctrl-btn:hover { color: #00c853; }
+</style>
+</head>
+<body>
+
+<!-- ACCORDION -->
+<div class="accordion" id="accordion">
+  <div class="accordion-header" id="accordionToggle">
+    <div>Обрати відстеження <span id="selectedCount"></span></div>
+    <span class="accordion-arrow">▼</span>
+  </div>
+  <div class="accordion-body">
+    <div class="channel-list" id="channelList">
+      <div style="color:#555;font-size:13px;padding:8px 0">Завантаження...</div>
+    </div>
+    <div class="accordion-footer">
+      <div style="font-size:11px;color:#555">Обери канали для підбірки</div>
+      <button class="btn-save" id="saveChannels">Зберегти</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <select id="hoursSelect">
+    <option value="3">За 3 години</option>
+    <option value="6">За 6 годин</option>
+    <option value="10" selected>За 10 годин</option>
+    <option value="24">За 24 години</option>
+  </select>
+  <button class="btn-fetch" id="fetchNow">Оновити</button>
+  <div class="refresh-time" id="refreshTime"></div>
+</div>
+
+<!-- PLAYLIST -->
+<div class="playlist" id="playlist">
+  <div class="empty-state" id="emptyState" style="display:none">Додай підписку</div>
+</div>
+
+<!-- UNDO TOAST -->
+<div class="undo-toast" id="undoToast">
+  <span id="undoText">Видалено</span>
+  <button class="btn-undo" id="undoBtn">Повернути</button>
+</div>
+
+<!-- PLAYER -->
+<div class="player" id="player">
+  <div class="player-title" id="playerTitle">—</div>
+  <div class="player-channel" id="playerChannel"></div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="player-controls">
+    <button class="ctrl-btn" id="prevBtn">⏮</button>
+    <button class="ctrl-btn" id="playBtn">⏸</button>
+    <button class="ctrl-btn" id="nextBtn">⏭</button>
+  </div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
