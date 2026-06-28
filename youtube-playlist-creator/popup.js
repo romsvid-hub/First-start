@@ -2,8 +2,6 @@ let playlist = [];
 let deletedStack = [];
 let undoTimer = null;
 let dragSrcIndex = null;
-let currentIndex = 0;
-let isPlaying = false;
 
 const accordionEl = document.getElementById('accordion');
 const accordionToggle = document.getElementById('accordionToggle');
@@ -15,11 +13,7 @@ const undoToast = document.getElementById('undoToast');
 const undoBtn = document.getElementById('undoBtn');
 const undoText = document.getElementById('undoText');
 const refreshTimeEl = document.getElementById('refreshTime');
-const playerEl = document.getElementById('player');
-const playerTitle = document.getElementById('playerTitle');
-const playerChannel = document.getElementById('playerChannel');
-const progressFill = document.getElementById('progressFill');
-const playBtn = document.getElementById('playBtn');
+const openInYTBtn = document.getElementById('openInYT');
 
 // --- INIT ---
 async function init() {
@@ -31,10 +25,7 @@ async function init() {
   renderPlaylist();
   loadChannelList(data.selectedChannels || []);
 
-  if (data.currentVideoId) {
-    const idx = playlist.findIndex(v => v.id === data.currentVideoId);
-    if (idx !== -1) { currentIndex = idx; updatePlayer(); }
-  }
+  updateOpenButton();
 }
 
 // --- ACCORDION ---
@@ -155,7 +146,7 @@ function renderPlaylist() {
     el.addEventListener('dragend', onDragEnd);
   });
 
-  if (items.length > 0) updatePlayer();
+  updateOpenButton();
 }
 
 // --- DELETE / UNDO ---
@@ -217,51 +208,29 @@ function onDragEnd() {
 }
 
 // --- PLAYER ---
-const ytPlayerFrame = document.getElementById('ytPlayer');
-
 function playTrack(idx) {
-  currentIndex = idx;
-  isPlaying = true;
   const items = playlist.filter(v => !v.deleted);
-  const video = items[idx];
-  if (!video) return;
-  video.watched = true;
-  video.isNew = false;
-  chrome.storage.local.set({ playlist, currentVideoId: video.id });
+  const ordered = [...items.slice(idx), ...items.slice(0, idx)];
+  const ids = ordered.map(v => v.id).join(',');
+  ordered.forEach(v => { v.watched = true; v.isNew = false; });
+  chrome.storage.local.set({ playlist });
   renderPlaylist();
-  updatePlayer(video);
+  chrome.tabs.create({ url: `https://www.youtube.com/watch_videos?video_ids=${ids}` });
 }
 
-function updatePlayer(video) {
-  if (!video) {
-    const items = playlist.filter(v => !v.deleted);
-    video = items[currentIndex];
-  }
-  if (!video) return;
-  playerEl.classList.add('active');
-  playerTitle.textContent = video.title;
-  playerChannel.textContent = video.channel;
-  playBtn.textContent = '⏸';
-  ytPlayerFrame.src = `https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&rel=0`;
-}
-
-playBtn.addEventListener('click', () => {
-  isPlaying = !isPlaying;
-  playBtn.textContent = isPlaying ? '⏸' : '▶';
-  // toggle via postMessage to iframe
-  ytPlayerFrame.contentWindow?.postMessage(
-    JSON.stringify({ event: 'command', func: isPlaying ? 'playVideo' : 'pauseVideo' }),
-    '*'
-  );
-});
-
-document.getElementById('prevBtn').addEventListener('click', () => {
-  if (currentIndex > 0) playTrack(currentIndex - 1);
-});
-
-document.getElementById('nextBtn').addEventListener('click', () => {
+function updateOpenButton() {
   const items = playlist.filter(v => !v.deleted);
-  if (currentIndex < items.length - 1) playTrack(currentIndex + 1);
+  if (!items.length) {
+    openInYTBtn.disabled = true;
+    openInYTBtn.textContent = '▶ Відкрити в YouTube';
+    return;
+  }
+  openInYTBtn.disabled = false;
+  openInYTBtn.textContent = `▶ Відкрити в YouTube (${items.length})`;
+}
+
+openInYTBtn.addEventListener('click', () => {
+  playTrack(0);
 });
 
 // --- UTILS ---
